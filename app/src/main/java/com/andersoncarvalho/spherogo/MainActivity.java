@@ -19,6 +19,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -31,19 +32,29 @@ import com.orbotix.le.RobotLE;
 import com.orbotix.common.RobotChangedStateListener;
 
 public class MainActivity extends AppCompatActivity
-        implements RobotChangedStateListener,NavigationView.OnNavigationItemSelectedListener, SensorEventListener {
+        implements RobotChangedStateListener, NavigationView.OnNavigationItemSelectedListener, SensorEventListener {
 
     public ConvenienceRobot mRobot;
-    public DualStackDiscoveryAgent coneccao;
+    public DualStackDiscoveryAgent conexao;
     public TextView status, posicaoX, posicaoY, posicaoZ, detalhesText;
+    public Button desconectar;
     private SensorManager mSensorManager;
     private Sensor mAccelerometer;
+
+    private static final float VELOCIDADE_SPHERO = 0.6f;
+
+    /** Para controle do sphero podemos levar em consideracao o seguinte
+    * 0 move ela para frente
+    * 90 move ela para a direita
+    * 180 move ela para tras
+    * 270 move ela para a esquerda
+    **/
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        coneccao.getInstance().addRobotStateListener(this);
+        conexao.getInstance().addRobotStateListener(this);
         mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 
@@ -70,7 +81,7 @@ public class MainActivity extends AppCompatActivity
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-            this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.setDrawerListener(toggle);
         toggle.syncState();
 
@@ -81,15 +92,40 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onStart() {
         super.onStart();
+        iniciarBuscaPorShero();
+    }
 
-        //If the DiscoveryAgent is not already looking for robots, start discovery.
-        if( !coneccao.getInstance().isDiscovering() ) {
+    public void iniciarBuscaPorShero(){
+
+        //Se o  DiscoveryAgent nao estiver procurando a sphero, ele ira comecar.
+        if (!conexao.getInstance().isDiscovering()) {
             try {
-                coneccao.getInstance().startDiscovery(getApplicationContext());
+                conexao.getInstance().startDiscovery(getApplicationContext());
             } catch (DiscoveryException e) {
                 Log.e("Sphero", "DiscoveryException: " + e.getMessage());
             }
         }
+    }
+
+//    @Override
+//    protected void onStop() {
+//        if( DualStackDiscoveryAgent.getInstance().isDiscovering() ) {
+//            DualStackDiscoveryAgent.getInstance().stopDiscovery();
+//        }
+//
+//        //Se o sphero ainda estiver conectado, ele ira ser desconectado
+//        if( mRobot != null ) {
+//            mRobot.disconnect();
+//            mRobot = null;
+//        }
+//
+//        super.onStop();
+//    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        DualStackDiscoveryAgent.getInstance().addRobotStateListener( null );
     }
 
     @Override
@@ -140,20 +176,16 @@ public class MainActivity extends AppCompatActivity
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
-        // Handle navigation view item clicks here.
+        // Items do navigation drawer
         int id = item.getItemId();
 
-        if (id == R.id.nav_camera) {
-            // Handle the camera action
-        } else if (id == R.id.nav_gallery) {
-
-        } else if (id == R.id.nav_slideshow) {
-
-        } else if (id == R.id.nav_manage) {
-
-        } else if (id == R.id.nav_share) {
-
-        } else if (id == R.id.nav_send) {
+        if (id == R.id.nav_connect) {
+            iniciarBuscaPorShero();
+        } else if (id == R.id.nav_disconnect) {
+            if(mRobot != null){
+                mRobot.disconnect();
+                mRobot = null;
+            }
 
         }
 
@@ -164,16 +196,10 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void handleRobotChangedState(Robot robot, RobotChangedStateNotificationType type) {
-        mRobot = new ConvenienceRobot( robot );
+        mRobot = new ConvenienceRobot(robot);
         switch (type) {
             case Online: {
                 status.setText("Status : Online");
-                float red = Color.RED/255f;
-                float green = Color.GREEN/255f;
-                float blue = Color.BLUE/255f;
-
-
-                mRobot.setLed(red,green,blue);
                 break;
             }
             case Connected: {
@@ -184,11 +210,9 @@ public class MainActivity extends AppCompatActivity
             case Disconnected: {
                 status.setText("Status : Desconectado");
                 Log.d("Go!", "Sphero desconectado");
-                Toast.makeText(getApplicationContext(), "Sphero desconectado!", Toast.LENGTH_SHORT).show();
             }
             case FailedConnect: {
                 Log.d("Go!", "Falha ao conectar no Sphero");
-                Toast.makeText(getApplicationContext(), "Falha ao conectar no Sphero!", Toast.LENGTH_SHORT).show();
             }
             case Connecting: {
                 status.setText("Status : Conectando ...");
@@ -199,11 +223,17 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+
+    //    Esse metodo manipula o sensor de acelerometro do celular
     @Override
     public void onSensorChanged(SensorEvent event) {
-        Float x = event.values[0];
-        Float y = event.values[1];
-        Float z = event.values[2];
+//        Caso o robo ja tenha iniciado
+        if (mRobot != null) {
+
+
+            Float x = event.values[0];
+            Float y = event.values[1];
+            Float z = event.values[2];
 
          /*
         Os valores ocilam de -10 a 10.
@@ -217,25 +247,52 @@ public class MainActivity extends AppCompatActivity
         Quanto menor o valor de Z Mais ele esta inclinado para traz.
         */
 
-        posicaoX.setText("Posição X: " + x.intValue() + " Float: " + x);
-        posicaoY.setText("Posição Y: " + y.intValue() + " Float: " + y);
-        posicaoZ.setText("Posição Z: " + z.intValue() + " Float: " + z);
+            posicaoX.setText("Posição X: " + x.intValue() + " Float: " + x);
+            posicaoY.setText("Posição Y: " + y.intValue() + " Float: " + y);
+            posicaoZ.setText("Posição Z: " + z.intValue() + " Float: " + z);
 
-        if(y < 0) { // O dispositivo esta de cabeça pra baixo
-            if(x > 0)
-                detalhesText.setText("Virando para ESQUERDA ficando INVERTIDO");
-            if(x < 0)
-                detalhesText.setText("Virando para DIREITA ficando INVERTIDO");
-        } else {
-            if(x > 0)
-                detalhesText.setText("Virando para ESQUERDA ");
-            if(x < 0)
-                detalhesText.setText("Virando para DIREITA ");
+            if( z > 1){
+                if (y < 0) { // O dispositivo esta de cabeça pra baixo
+                    mRobot.setLed(1.0f, 0.0f, 0.0f);
+                    if (x > 0)
+                    mRobot.stop();
+                    detalhesText.setText("Virando para ESQUERDA ficando INVERTIDO");
+                    if (x < 0)
+                        mRobot.stop();
+                    detalhesText.setText("Virando para DIREITA ficando INVERTIDO");
+                } else {
+                    if (x == 0){
+                        mRobot.setLed(0.0f, 1.0f, 0.0f);
+                        mRobot.drive( 0.0f, VELOCIDADE_SPHERO );
+                        detalhesText.setText("Aparelho centralizado ");
+                    }
+                    if (x > 1)
+//                        mRobot.setLed(yellow, yellow, yellow);
+                        mRobot.drive(270.0f, VELOCIDADE_SPHERO);
+                    detalhesText.setText("Virando para ESQUERDA ");
+                    if (x < -1)
+//                        mRobot.setLed(yellow, yellow, yellow);
+                    mRobot.drive( 90.0f, VELOCIDADE_SPHERO );
+                    detalhesText.setText("Virando para DIREITA ");
+                }
+            }else if(z == 0){
+                mRobot.stop();
+
+            }else{
+                detalhesText.setText("Virando para TRAS ");
+//                Move o sphero para tras
+                mRobot.setLed(0.0f, 0.0f, 1.0f);
+                mRobot.drive( 180.0f, VELOCIDADE_SPHERO );
+            }
+
+
         }
     }
 
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
+        //Retorna a bateria do Sphero
+        sensor.getPower();
 
     }
 }
