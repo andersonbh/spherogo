@@ -1,11 +1,16 @@
 package com.andersoncarvalho.spherogo;
 
+import android.Manifest;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -41,14 +46,17 @@ public class MainActivity extends AppCompatActivity
     private SensorManager mSensorManager;
     private Sensor mAccelerometer;
 
+    private static final int PERMISSION_REQUEST_COARSE_LOCATION = 1;
+
     private static final float VELOCIDADE_SPHERO = 0.6f;
 
-    /** Para controle do sphero podemos levar em consideracao o seguinte
-    * 0 move ela para frente
-    * 90 move ela para a direita
-    * 180 move ela para tras
-    * 270 move ela para a esquerda
-    **/
+    /**
+     * Para controle do sphero podemos levar em consideracao o seguinte
+     * 0 move ela para frente
+     * 90 move ela para a direita
+     * 180 move ela para tras
+     * 270 move ela para a esquerda
+     **/
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,13 +79,21 @@ public class MainActivity extends AppCompatActivity
         setSupportActionBar(toolbar);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Movimente seu celular!", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+        if (fab != null) {
+            fab.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Snackbar.make(view, "Movimente seu celular!", Snackbar.LENGTH_LONG)
+                            .setAction("Action", null).show();
+                }
+            });
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (this.checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, PERMISSION_REQUEST_COARSE_LOCATION);
             }
-        });
+        }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -95,7 +111,7 @@ public class MainActivity extends AppCompatActivity
         iniciarBuscaPorShero();
     }
 
-    public void iniciarBuscaPorShero(){
+    public void iniciarBuscaPorShero() {
 
         //Se o  DiscoveryAgent nao estiver procurando a sphero, ele ira comecar.
         if (!conexao.getInstance().isDiscovering()) {
@@ -125,7 +141,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        DualStackDiscoveryAgent.getInstance().addRobotStateListener( null );
+        DualStackDiscoveryAgent.getInstance().addRobotStateListener(null);
     }
 
     @Override
@@ -182,7 +198,7 @@ public class MainActivity extends AppCompatActivity
         if (id == R.id.nav_connect) {
             iniciarBuscaPorShero();
         } else if (id == R.id.nav_disconnect) {
-            if(mRobot != null){
+            if (mRobot != null) {
                 mRobot.disconnect();
                 mRobot = null;
             }
@@ -251,19 +267,19 @@ public class MainActivity extends AppCompatActivity
             posicaoY.setText("Posição Y: " + y.intValue() + " Float: " + y);
             posicaoZ.setText("Posição Z: " + z.intValue() + " Float: " + z);
 
-            if( z > 1){
+            if (z > 1) {
                 if (y < 0) { // O dispositivo esta de cabeça pra baixo
                     mRobot.setLed(1.0f, 0.0f, 0.0f);
                     if (x > 0)
-                    mRobot.stop();
+                        mRobot.stop();
                     detalhesText.setText("Virando para ESQUERDA ficando INVERTIDO");
                     if (x < 0)
                         mRobot.stop();
                     detalhesText.setText("Virando para DIREITA ficando INVERTIDO");
                 } else {
-                    if (x == 0){
+                    if (x == 0) {
                         mRobot.setLed(0.0f, 1.0f, 0.0f);
-                        mRobot.drive( 0.0f, VELOCIDADE_SPHERO );
+                        mRobot.drive(0.0f, VELOCIDADE_SPHERO);
                         detalhesText.setText("Aparelho centralizado ");
                     }
                     if (x > 1)
@@ -272,17 +288,17 @@ public class MainActivity extends AppCompatActivity
                     detalhesText.setText("Virando para ESQUERDA ");
                     if (x < -1)
 //                        mRobot.setLed(yellow, yellow, yellow);
-                    mRobot.drive( 90.0f, VELOCIDADE_SPHERO );
+                        mRobot.drive(90.0f, VELOCIDADE_SPHERO);
                     detalhesText.setText("Virando para DIREITA ");
                 }
-            }else if(z == 0){
+            } else if (z == 0) {
                 mRobot.stop();
 
-            }else{
+            } else {
                 detalhesText.setText("Virando para TRAS ");
 //                Move o sphero para tras
                 mRobot.setLed(0.0f, 0.0f, 1.0f);
-                mRobot.drive( 180.0f, VELOCIDADE_SPHERO );
+                mRobot.drive(180.0f, VELOCIDADE_SPHERO);
             }
 
 
