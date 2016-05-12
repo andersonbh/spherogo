@@ -10,6 +10,7 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     android:paddingBottom="@dimen/activity_vertical_margin"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    android:background="@color/colorPrimaryVeryDark"
     tools:showIn="@layout/app_bar_main"
     tools:context="com.andersoncarvalho.spherogo.MainActivity">
 
@@ -51,11 +52,36 @@
         android:layout_below="@+id/posicaoZ"
         android:layout_alignParentStart="true" />
 
-    <TextView
-        android:text="Basta mover o celular que o Sphero irá se mexer!!!"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerVertical="true"
-        android:textSize="@dimen/bigText"
-        android:layout_alignParentEnd="true" />
+    <ImageView
+        android:layout_width="150px"
+        android:layout_height="150px"
+        android:id="@+id/setadireita"
+        android:src="@mipmap/seta_direita"
+        android:layout_alignTop="@+id/setaesquerda"
+        android:layout_toEndOf="@+id/setabaixo" />
+    <ImageView
+        android:layout_width="150px"
+        android:layout_height="150px"
+        android:id="@+id/setaesquerda"
+        android:src="@mipmap/seta_esquerda"
+        android:layout_marginTop="50dp"
+        android:layout_alignTop="@+id/setacima"
+        android:layout_toStartOf="@+id/setabaixo" />
+    <ImageView
+        android:layout_width="150px"
+        android:layout_height="150px"
+        android:id="@+id/setabaixo"
+        android:src="@mipmap/seta_baixo"
+        android:layout_alignTop="@+id/setacima"
+        android:layout_alignStart="@+id/setacima"
+        android:layout_marginTop="100dp" />
+    <ImageView
+        android:layout_width="150px"
+        android:layout_height="150px"
+        android:id="@+id/setacima"
+        android:src="@mipmap/seta_cima"
+        android:layout_marginBottom="176dp"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true" />
+
 </RelativeLayout>
