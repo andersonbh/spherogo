@@ -14,7 +14,6 @@ import android.os.Handler;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
-import android.text.Editable;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -26,9 +25,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -60,13 +61,18 @@ public class MainActivity extends AppCompatActivity
 
     private static float VELOCIDADE_SPHERO = 0.3f;
     private static int NUM_MOVIMENTOS = 6;
-    ArrayList<Movimento> listaMovimentos;
+    ArrayList<Integer> listaMovimentos;
 
     ImageView setaesquerda, setadireita, setacima, setabaixo;
 
     private float bateria;
 
     boolean executandoMovimentos = false;
+
+    ListView list;
+
+    MovimentoList adapter;
+
 
     /**
      * Para controle do sphero podemos levar em consideracao o seguinte
@@ -83,7 +89,7 @@ public class MainActivity extends AppCompatActivity
         conexao.getInstance().addRobotStateListener(this);
         mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-        listaMovimentos = new ArrayList<Movimento>();
+        listaMovimentos = new ArrayList<Integer>();
 
         status = (TextView) findViewById(R.id.status);
         posicaoX = (TextView) findViewById(R.id.posicaoX);
@@ -98,6 +104,20 @@ public class MainActivity extends AppCompatActivity
         goButton = (FloatingActionButton) findViewById(R.id.gobotao);
 
 
+        adapter = new
+                MovimentoList(MainActivity.this, listaMovimentos);
+        list=(ListView)findViewById(R.id.list);
+        list.setAdapter(adapter);
+        list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view,
+                                    int position, long id) {
+                Toast.makeText(MainActivity.this, "Voce movimentou a seta número " +(position + 1), Toast.LENGTH_SHORT).show();
+
+            }
+        });
+
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         toolbar.setTitle("Sphero Go");
         setSupportActionBar(toolbar);
@@ -107,7 +127,7 @@ public class MainActivity extends AppCompatActivity
             fab.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    Snackbar.make(view, "Movimente seu celular! Bateria do Sphero: " + bateria, Snackbar.LENGTH_LONG)
+                    Snackbar.make(view, "Movimente seu celular! Bateria do Sphero: " + (long)( bateria * 100) + "%", Snackbar.LENGTH_LONG)
                             .setAction("Action", null).show();
                 }
             });
@@ -330,29 +350,29 @@ public class MainActivity extends AppCompatActivity
             esconderSetas();
 
             switch (listaMovimentos.get(0)) {
-                case ESQUERDA:
+                case R.mipmap.seta_esquerda:
                     setaesquerda.setVisibility(View.VISIBLE);
                     Log.d("Movimento executado", "Movimento Executado: esquerda" + listaMovimentos.size());
                     locomover(270.0f, VELOCIDADE_SPHERO);
                     break;
-                case DIREITA:
+                case R.mipmap.seta_direita:
                     Log.d("Movimento executado", "Movimento Executado: direita" + listaMovimentos.size());
                     setadireita.setVisibility(View.VISIBLE);
                     locomover(90.0f, VELOCIDADE_SPHERO);
                     break;
-                case BAIXO:
+                case R.mipmap.seta_baixo:
                     Log.d("Movimento executado", "Movimento Executado: baixo" + listaMovimentos.size());
-
                     setabaixo.setVisibility(View.VISIBLE);
                     locomover(180.0f, VELOCIDADE_SPHERO);
                     break;
-                case CIMA:
+                case R.mipmap.seta_cima:
                     Log.d("Movimento executado", "Movimento Executado: cima" + listaMovimentos.size());
                     setacima.setVisibility(View.VISIBLE);
                     locomover(0.0f, VELOCIDADE_SPHERO);
                     break;
             }
             listaMovimentos.remove(0);
+            adapter.notifyDataSetChanged();
         }else{
             executandoMovimentos = false;
         }
@@ -380,15 +400,15 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    private boolean isUltimoInserido(Movimento movimento) {
-        return !listaMovimentos.isEmpty() && listaMovimentos.get(listaMovimentos.size() - 1) == movimento;
+    private boolean isUltimoInserido(int imagemId) {
+        return !listaMovimentos.isEmpty() && listaMovimentos.get(listaMovimentos.size() - 1) == imagemId;
     }
 
 
     //    Esse metodo manipula o sensor de acelerometro do celular
     @Override
     public void onSensorChanged(SensorEvent event) {
-        if (!executandoMovimentos && listaMovimentos.size() <= NUM_MOVIMENTOS) {
+        if (!executandoMovimentos && listaMovimentos.size() < NUM_MOVIMENTOS) {
             esconderSetas();
             Float x = event.values[0];
             Float y = event.values[1];
@@ -412,24 +432,24 @@ public class MainActivity extends AppCompatActivity
 
             if (z > 1) {
                 if (y < -2) { // O dispositivo esta de cabeça pra baixo
-                    if (!isUltimoInserido(Movimento.CIMA)) {
-                        listaMovimentos.add(Movimento.CIMA);
-                    }
                     setacima.setVisibility(View.VISIBLE);
+                    if (!isUltimoInserido(R.mipmap.seta_cima)) {
+                        listaMovimentos.add(R.mipmap.seta_cima);
+                    }
                     detalhesText.setText("CIMA ");
                 } else {
                     if (x == 0) {
                         detalhesText.setText("Aparelho centralizado ");
                     } else if (x > 2) {
                         setaesquerda.setVisibility(View.VISIBLE);
-                        if (!isUltimoInserido(Movimento.ESQUERDA)) {
-                            listaMovimentos.add(Movimento.ESQUERDA);
+                        if (!isUltimoInserido(R.mipmap.seta_esquerda)) {
+                            listaMovimentos.add(R.mipmap.seta_esquerda);
                         }
                         detalhesText.setText("Virando para ESQUERDA ");
                     } else if (x < -2) {
                         setadireita.setVisibility(View.VISIBLE);
-                        if (!isUltimoInserido(Movimento.DIREITA)) {
-                            listaMovimentos.add(Movimento.DIREITA);
+                        if (!isUltimoInserido(R.mipmap.seta_direita)) {
+                            listaMovimentos.add(R.mipmap.seta_direita);
                         }
                         detalhesText.setText("Virando para DIREITA ");
                     }
@@ -437,12 +457,13 @@ public class MainActivity extends AppCompatActivity
             } else if (z < 1){
                 detalhesText.setText("Virando para TRAS ");
                 setabaixo.setVisibility(View.VISIBLE);
-                if (!isUltimoInserido(Movimento.BAIXO)) {
-                    listaMovimentos.add(Movimento.BAIXO);
+                if (!isUltimoInserido(R.mipmap.seta_baixo)) {
+                    listaMovimentos.add(R.mipmap.seta_baixo);
                 }
             }
-
-
+            adapter.notifyDataSetChanged();
+        }else if(!executandoMovimentos && listaMovimentos.size() == NUM_MOVIMENTOS){
+            esconderSetas();
         }
     }
 
