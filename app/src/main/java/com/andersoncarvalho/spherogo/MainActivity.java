@@ -13,6 +13,7 @@ import android.hardware.SensorManager;
 import android.media.Image;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.util.Log;
@@ -52,9 +53,11 @@ public class MainActivity extends AppCompatActivity
     private SensorManager mSensorManager;
     private Sensor mAccelerometer;
 
+    private FloatingActionButton goButton;
+
     private static final int PERMISSION_REQUEST_COARSE_LOCATION = 1;
 
-    private static final float VELOCIDADE_SPHERO = 0.6f;
+    private static final float VELOCIDADE_SPHERO = 0.3f;
     ArrayList<Movimento> listaMovimentos;
 
     ImageView setaesquerda, setadireita, setacima, setabaixo;
@@ -88,6 +91,8 @@ public class MainActivity extends AppCompatActivity
         setabaixo = (ImageView) findViewById(R.id.setabaixo);
         setacima = (ImageView) findViewById(R.id.setacima);
 
+        goButton = (FloatingActionButton) findViewById(R.id.gobotao);
+
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         toolbar.setTitle("Sphero Go");
@@ -100,6 +105,16 @@ public class MainActivity extends AppCompatActivity
                 public void onClick(View view) {
                     Snackbar.make(view, "Movimente seu celular!", Snackbar.LENGTH_LONG)
                             .setAction("Action", null).show();
+                }
+            });
+        }
+
+        if (goButton != null) {
+            goButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Snackbar.make(view, "Executando movimentos ...", Snackbar.LENGTH_SHORT).setAction("Action", null).show();
+                    executarListaMovimentos();
                 }
             });
         }
@@ -153,7 +168,7 @@ public class MainActivity extends AppCompatActivity
 //        super.onStop();
 //    }
 
-    public void esconderSetas(){
+    public void esconderSetas() {
         setadireita.setVisibility(View.INVISIBLE);
         setaesquerda.setVisibility(View.INVISIBLE);
         setacima.setVisibility(View.INVISIBLE);
@@ -169,7 +184,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onResume() {
         super.onResume();
-        mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
+        mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_GAME);
     }
 
     @Override
@@ -261,50 +276,88 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    public void executarListaMovimentos(){
-        executandoMovimentos = true;
-        while(!listaMovimentos.isEmpty()){
-            esconderSetas();
-            int delay = 500;   // delay de 0,5 seg.
-            int interval = 2000;  // intervalo de 2 seg.
-            Timer timer = new Timer();
-            timer.scheduleAtFixedRate(new TimerTask() {
-                public void run() {
-                    switch (listaMovimentos.get(0))
-                    {
-                        case ESQUERDA:
-                            setaesquerda.setVisibility(View.VISIBLE);
-                            mRobot.drive(270.0f, VELOCIDADE_SPHERO);
-                            break;
-                        case DIREITA:
-                            setadireita.setVisibility(View.VISIBLE);
-                            mRobot.drive(90.0f, VELOCIDADE_SPHERO);
-                            break;
-                        case BAIXO:
-                            setabaixo.setVisibility(View.VISIBLE);
-                            mRobot.drive(180.0f, VELOCIDADE_SPHERO);
-                            break;
-                        case CIMA:
-                            setacima.setVisibility(View.VISIBLE);
-                            mRobot.drive(0.0f, VELOCIDADE_SPHERO);
-                            break;
-                    }
-                    listaMovimentos.remove(0);
-                }
-            }, delay, interval);
+    public void executarListaMovimentos() {
+        if (!listaMovimentos.isEmpty()) {
+            executandoMovimentos = true;
+
+            switch (listaMovimentos.get(0)) {
+                case ESQUERDA:
+                    setaesquerda.setVisibility(View.VISIBLE);
+                    Log.d("Movimento executado", "Movimento Executado: esquerda" + listaMovimentos.size());
+                    andarPor2Seg(270.0f, VELOCIDADE_SPHERO);
+                    break;
+                case DIREITA:
+                    Log.d("Movimento executado", "Movimento Executado: direita" + listaMovimentos.size());
+                    setadireita.setVisibility(View.VISIBLE);
+                    andarPor2Seg(90.0f, VELOCIDADE_SPHERO);
+                    break;
+                case BAIXO:
+                    Log.d("Movimento executado", "Movimento Executado: baixo" + listaMovimentos.size());
+
+                    setabaixo.setVisibility(View.VISIBLE);
+                    andarPor2Seg(180.0f, VELOCIDADE_SPHERO);
+                    break;
+                case CIMA:
+                    Log.d("Movimento executado", "Movimento Executado: cima" + listaMovimentos.size());
+                    setacima.setVisibility(View.VISIBLE);
+                    andarPor2Seg(0.0f, VELOCIDADE_SPHERO);
+                    break;
+            }
+            listaMovimentos.remove(0);
+        }else{
+            executandoMovimentos = false;
         }
-        esconderSetas();
-        executandoMovimentos = false;
+
+    }
+
+
+    private void andarPor2Seg(final float direcao, final float velocidade) {
+        if(mRobot != null) {
+            // Send a roll command to Sphero so it goes forward at full speed.
+            mRobot.drive(direcao, velocidade);        // 1
+
+            // Send a delayed message on a handler
+            final Handler handler = new Handler();                               // 2
+            handler.postDelayed(new Runnable() {
+
+                @Override
+                public void run() {
+                    // Send a stop to Sphero
+                    mRobot.stop();
+                    executarListaMovimentos();
+                }
+            }, 500);
+
+        }
+    }
+
+//    private void andarPor2Seg(final float direcao, final float velocidade) {
+//        if (mRobot != null) {
+//            // Send a roll command to Sphero so it goes forward at full speed.
+//            mRobot.stop();                                               // 3
+//            // Send a delayed message on a handler
+//            final Handler handler = new Handler();
+//            handler.postAtTime(new Runnable() {
+//
+//                @Override
+//                public void run() {
+//                    // Send a stop to Sphero
+//                    mRobot.drive(direcao, velocidade);        // 1
+//                }
+//            }, 1000);
+//        }
+//    }
+
+    private boolean isUltimoInserido(Movimento movimento) {
+        return !listaMovimentos.isEmpty() && listaMovimentos.get(listaMovimentos.size() - 1) == movimento;
     }
 
 
     //    Esse metodo manipula o sensor de acelerometro do celular
     @Override
     public void onSensorChanged(SensorEvent event) {
-//        Caso o robo ja tenha iniciado
-        if (mRobot != null && !executandoMovimentos) {
-
-            esconderSetas();
+        esconderSetas();
+        if (!executandoMovimentos && listaMovimentos.size() < 7) {
             Float x = event.values[0];
             Float y = event.values[1];
             Float z = event.values[2];
@@ -326,48 +379,35 @@ public class MainActivity extends AppCompatActivity
             posicaoZ.setText("Posição Z: " + z.intValue() + " Float: " + z);
 
             if (z > 1) {
-                if (y < 0) { // O dispositivo esta de cabeça pra baixo
-                    listaMovimentos.add(Movimento.CIMA);
+                if (y < -2) { // O dispositivo esta de cabeça pra baixo
+                    if (!isUltimoInserido(Movimento.CIMA)) {
+                        listaMovimentos.add(Movimento.CIMA);
+                    }
                     setacima.setVisibility(View.VISIBLE);
-                        ////                    mRobot.setLed(1.0f, 0.0f, 0.0f);
-                        //                    if (x > 0)
-                        //                        mRobot.stop();
-                        //                    detalhesText.setText("Virando para ESQUERDA ficando INVERTIDO");
-                        //                    if (x < 0)
-                        //                        mRobot.stop();
-                        //                    detalhesText.setText("Virando para DIREITA ficando INVERTIDO");
+                    detalhesText.setText("CIMA ");
                 } else {
                     if (x == 0) {
-                        //  mRobot.setLed(0.0f, 1.0f, 0.0f);
-//                        mRobot.drive(0.0f, VELOCIDADE_SPHERO);
                         detalhesText.setText("Aparelho centralizado ");
-                    }
-                    if (x > 1)
+                    } else if (x > 2) {
                         setaesquerda.setVisibility(View.VISIBLE);
-
-                    listaMovimentos.add(Movimento.ESQUERDA);
-                        //  mRobot.setLed(yellow, yellow, yellow);
-//                        mRobot.drive(270.0f, VELOCIDADE_SPHERO);
-                    detalhesText.setText("Virando para ESQUERDA ");
-                    if (x < -1)
+                        if (!isUltimoInserido(Movimento.ESQUERDA)) {
+                            listaMovimentos.add(Movimento.ESQUERDA);
+                        }
+                        detalhesText.setText("Virando para ESQUERDA ");
+                    } else if (x < -2) {
                         setadireita.setVisibility(View.VISIBLE);
-
-                    listaMovimentos.add(Movimento.DIREITA);
-                        //   mRobot.setLed(yellow, yellow, yellow);
-//                        mRobot.drive(90.0f, VELOCIDADE_SPHERO);
-                    detalhesText.setText("Virando para DIREITA ");
+                        if (!isUltimoInserido(Movimento.DIREITA)) {
+                            listaMovimentos.add(Movimento.DIREITA);
+                        }
+                        detalhesText.setText("Virando para DIREITA ");
+                    }
                 }
-            } else if (z == 0) {
-//                mRobot.stop();
-
-            } else {
+            } else if (z < 1){
                 detalhesText.setText("Virando para TRAS ");
                 setabaixo.setVisibility(View.VISIBLE);
-
-                listaMovimentos.add(Movimento.BAIXO);
-                // Move o sphero para tras
-                //  mRobot.setLed(0.0f, 0.0f, 1.0f);
-//                mRobot.drive(180.0f, VELOCIDADE_SPHERO);
+                if (!isUltimoInserido(Movimento.BAIXO)) {
+                    listaMovimentos.add(Movimento.BAIXO);
+                }
             }
 
 
