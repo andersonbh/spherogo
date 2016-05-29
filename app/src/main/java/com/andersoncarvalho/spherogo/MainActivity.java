@@ -1,22 +1,22 @@
 package com.andersoncarvalho.spherogo;
 
 import android.Manifest;
-import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.media.Image;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v7.app.AlertDialog;
+import android.text.Editable;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -27,6 +27,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -35,13 +36,13 @@ import com.orbotix.ConvenienceRobot;
 import com.orbotix.DualStackDiscoveryAgent;
 import com.orbotix.common.DiscoveryException;
 import com.orbotix.common.Robot;
-import com.orbotix.le.DiscoveryAgentLE;
-import com.orbotix.le.RobotLE;
 import com.orbotix.common.RobotChangedStateListener;
 
 import java.util.ArrayList;
-import java.util.Timer;
-import java.util.TimerTask;
+
+/**
+ * Created by anderson on 16/03/16.
+ */
 
 public class MainActivity extends AppCompatActivity
         implements RobotChangedStateListener, NavigationView.OnNavigationItemSelectedListener, SensorEventListener {
@@ -57,10 +58,13 @@ public class MainActivity extends AppCompatActivity
 
     private static final int PERMISSION_REQUEST_COARSE_LOCATION = 1;
 
-    private static final float VELOCIDADE_SPHERO = 0.3f;
+    private static float VELOCIDADE_SPHERO = 0.3f;
+    private static int NUM_MOVIMENTOS = 6;
     ArrayList<Movimento> listaMovimentos;
 
     ImageView setaesquerda, setadireita, setacima, setabaixo;
+
+    private float bateria;
 
     boolean executandoMovimentos = false;
 
@@ -103,7 +107,7 @@ public class MainActivity extends AppCompatActivity
             fab.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    Snackbar.make(view, "Movimente seu celular!", Snackbar.LENGTH_LONG)
+                    Snackbar.make(view, "Movimente seu celular! Bateria do Sphero: " + bateria, Snackbar.LENGTH_LONG)
                             .setAction("Action", null).show();
                 }
             });
@@ -125,6 +129,17 @@ public class MainActivity extends AppCompatActivity
             }
         }
 
+        FloatingActionButton configuracoes = (FloatingActionButton) findViewById(R.id.configs);
+        if (configuracoes != null) {
+            configuracoes.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    mostrarDialogoConfiguracoes();
+                }
+            });
+        }
+
+
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
@@ -133,6 +148,39 @@ public class MainActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+    }
+
+
+    protected void mostrarDialogoConfiguracoes() {
+
+        LayoutInflater layoutInflater = LayoutInflater.from(MainActivity.this);
+        View promptView = layoutInflater.inflate(R.layout.dialog_config, null);
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(MainActivity.this);
+        alertDialogBuilder.setView(promptView);
+
+        final EditText velocidadeInput = (EditText) promptView.findViewById(R.id.velocidade);
+        velocidadeInput.setText(((long)(VELOCIDADE_SPHERO * 100)) + "");
+
+        final EditText numMovimentos = (EditText) promptView.findViewById(R.id.numMovimentos);
+        numMovimentos.setText(NUM_MOVIMENTOS + "");
+
+        alertDialogBuilder.setCancelable(true)
+                .setPositiveButton("Aplicar", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        VELOCIDADE_SPHERO  = (float) Long.parseLong(velocidadeInput.getText().toString()) / 100;
+                        NUM_MOVIMENTOS = Integer.parseInt(numMovimentos.getText().toString());
+                        Log.d("Velocidade Sphero", VELOCIDADE_SPHERO + "");
+                    }
+                })
+                .setNegativeButton("Cancelar",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                dialog.cancel();
+                            }
+                        });
+
+        AlertDialog alert = alertDialogBuilder.create();
+        alert.show();
     }
 
     @Override
@@ -279,28 +327,29 @@ public class MainActivity extends AppCompatActivity
     public void executarListaMovimentos() {
         if (!listaMovimentos.isEmpty()) {
             executandoMovimentos = true;
+            esconderSetas();
 
             switch (listaMovimentos.get(0)) {
                 case ESQUERDA:
                     setaesquerda.setVisibility(View.VISIBLE);
                     Log.d("Movimento executado", "Movimento Executado: esquerda" + listaMovimentos.size());
-                    andarPor2Seg(270.0f, VELOCIDADE_SPHERO);
+                    locomover(270.0f, VELOCIDADE_SPHERO);
                     break;
                 case DIREITA:
                     Log.d("Movimento executado", "Movimento Executado: direita" + listaMovimentos.size());
                     setadireita.setVisibility(View.VISIBLE);
-                    andarPor2Seg(90.0f, VELOCIDADE_SPHERO);
+                    locomover(90.0f, VELOCIDADE_SPHERO);
                     break;
                 case BAIXO:
                     Log.d("Movimento executado", "Movimento Executado: baixo" + listaMovimentos.size());
 
                     setabaixo.setVisibility(View.VISIBLE);
-                    andarPor2Seg(180.0f, VELOCIDADE_SPHERO);
+                    locomover(180.0f, VELOCIDADE_SPHERO);
                     break;
                 case CIMA:
                     Log.d("Movimento executado", "Movimento Executado: cima" + listaMovimentos.size());
                     setacima.setVisibility(View.VISIBLE);
-                    andarPor2Seg(0.0f, VELOCIDADE_SPHERO);
+                    locomover(0.0f, VELOCIDADE_SPHERO);
                     break;
             }
             listaMovimentos.remove(0);
@@ -311,42 +360,25 @@ public class MainActivity extends AppCompatActivity
     }
 
 
-    private void andarPor2Seg(final float direcao, final float velocidade) {
+    private void locomover(final float direcao, final float velocidade) {
         if(mRobot != null) {
-            // Send a roll command to Sphero so it goes forward at full speed.
-            mRobot.drive(direcao, velocidade);        // 1
+            // Sphero ira para a direcao requerida na velocidade que for passada como parametro
+            mRobot.drive(direcao, velocidade);
 
-            // Send a delayed message on a handler
-            final Handler handler = new Handler();                               // 2
+            // ira se locomover na direcao por 1 segundo
+            final Handler handler = new Handler();
             handler.postDelayed(new Runnable() {
 
                 @Override
                 public void run() {
-                    // Send a stop to Sphero
+                    //Para e executa o proximo movimento da lista recursivamente.
                     mRobot.stop();
                     executarListaMovimentos();
                 }
-            }, 500);
+            }, 1000);
 
         }
     }
-
-//    private void andarPor2Seg(final float direcao, final float velocidade) {
-//        if (mRobot != null) {
-//            // Send a roll command to Sphero so it goes forward at full speed.
-//            mRobot.stop();                                               // 3
-//            // Send a delayed message on a handler
-//            final Handler handler = new Handler();
-//            handler.postAtTime(new Runnable() {
-//
-//                @Override
-//                public void run() {
-//                    // Send a stop to Sphero
-//                    mRobot.drive(direcao, velocidade);        // 1
-//                }
-//            }, 1000);
-//        }
-//    }
 
     private boolean isUltimoInserido(Movimento movimento) {
         return !listaMovimentos.isEmpty() && listaMovimentos.get(listaMovimentos.size() - 1) == movimento;
@@ -356,8 +388,8 @@ public class MainActivity extends AppCompatActivity
     //    Esse metodo manipula o sensor de acelerometro do celular
     @Override
     public void onSensorChanged(SensorEvent event) {
-        esconderSetas();
-        if (!executandoMovimentos && listaMovimentos.size() < 7) {
+        if (!executandoMovimentos && listaMovimentos.size() <= NUM_MOVIMENTOS) {
+            esconderSetas();
             Float x = event.values[0];
             Float y = event.values[1];
             Float z = event.values[2];
@@ -416,8 +448,8 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
-        //Retorna a bateria do Sphero
-        sensor.getPower();
+        //Retorna a bateria disponivel do Sphero
+        bateria = sensor.getPower();
 
     }
 }
