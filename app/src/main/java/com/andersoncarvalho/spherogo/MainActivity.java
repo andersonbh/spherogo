@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
+import android.hardware.Camera;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -13,6 +14,8 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -28,6 +31,7 @@ import android.view.MenuItem;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -51,14 +55,16 @@ public class MainActivity extends AppCompatActivity
     public ConvenienceRobot mRobot;
     public DualStackDiscoveryAgent conexao;
     public TextView status;
-    // public TextView posicaoX, posicaoY, posicaoZ, detalhesText;
-    public Button desconectar;
     private SensorManager mSensorManager;
     private Sensor mAccelerometer;
 
+    private Camera mCamera;
+    private CameraPreview mPreview;
     private FloatingActionButton goButton;
 
     private static final int PERMISSION_REQUEST_COARSE_LOCATION = 1;
+    public static final int CAMERA_PERMISSION_REQUEST_CODE = 3;
+
 
     private static float VELOCIDADE_SPHERO = 0.3f;
     private static int NUM_MOVIMENTOS = 6;
@@ -87,16 +93,14 @@ public class MainActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        conexao.getInstance().addRobotStateListener(this);
+        if(checarPermissoesDeLocalizacao()) {
+            conexao.getInstance().addRobotStateListener(this);
+        }
         mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         listaMovimentos = new ArrayList<Integer>();
 
         status = (TextView) findViewById(R.id.status);
-        //posicaoX = (TextView) findViewById(R.id.posicaoX);
-        //posicaoY = (TextView) findViewById(R.id.posicaoY);
-        //posicaoZ = (TextView) findViewById(R.id.posicaoZ);
-        //detalhesText = (TextView) findViewById(R.id.detalhesText);
         setaesquerda = (ImageView) findViewById(R.id.setaesquerda);
         setadireita = (ImageView) findViewById(R.id.setadireita);
         setabaixo = (ImageView) findViewById(R.id.setabaixo);
@@ -104,6 +108,14 @@ public class MainActivity extends AppCompatActivity
 
         goButton = (FloatingActionButton) findViewById(R.id.gobotao);
 
+
+        if(checarPermissoesDaCamera()) {
+            mCamera = getCameraInstance();
+            // Cria o preview da camera
+            mPreview = new CameraPreview(this, mCamera);
+            FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
+            preview.addView(mPreview);
+        }
 
         adapter = new
                 MovimentoList(MainActivity.this, listaMovimentos);
@@ -144,12 +156,6 @@ public class MainActivity extends AppCompatActivity
             });
         }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (this.checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, PERMISSION_REQUEST_COARSE_LOCATION);
-            }
-        }
-
         FloatingActionButton configuracoes = (FloatingActionButton) findViewById(R.id.configs);
         if (configuracoes != null) {
             configuracoes.setOnClickListener(new View.OnClickListener() {
@@ -171,6 +177,37 @@ public class MainActivity extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
     }
 
+    public boolean checarPermissoesDaCamera(){
+        int result = ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA);
+        if (result == PackageManager.PERMISSION_GRANTED){
+            return true;
+        } else {
+                    ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.CAMERA},CAMERA_PERMISSION_REQUEST_CODE);
+            return false;
+        }
+    }
+
+    public boolean checarPermissoesDeLocalizacao(){
+        int result = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION);
+        if (result == PackageManager.PERMISSION_GRANTED){
+            return true;
+        } else {
+            ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, PERMISSION_REQUEST_COARSE_LOCATION);
+            return false;
+        }
+    }
+
+    /** Metodo para pegar a instancia da camera */
+    public static Camera getCameraInstance(){
+        Camera c = null;
+        try {
+            c = Camera.open(); // Tenta pegar a camera
+        }
+        catch (Exception e){
+            // Camera deu pau ou nao existe
+        }
+        return c; // retorna nulo se a camera nao existe
+    }
 
     protected void mostrarDialogoConfiguracoes() {
 
@@ -221,21 +258,6 @@ public class MainActivity extends AppCompatActivity
             }
         }
     }
-
-//    @Override
-//    protected void onStop() {
-//        if( DualStackDiscoveryAgent.getInstance().isDiscovering() ) {
-//            DualStackDiscoveryAgent.getInstance().stopDiscovery();
-//        }
-//
-//        //Se o sphero ainda estiver conectado, ele ira ser desconectado
-//        if( mRobot != null ) {
-//            mRobot.disconnect();
-//            mRobot = null;
-//        }
-//
-//        super.onStop();
-//    }
 
     public void esconderSetas() {
         setadireita.setVisibility(View.INVISIBLE);
@@ -423,36 +445,27 @@ public class MainActivity extends AppCompatActivity
         Quanto menor o valor de Z Mais ele esta inclinado para traz.
         */
 
-            //  posicaoX.setText("Posição X: " + x.intValue() + " Float: " + x);
-            //  posicaoY.setText("Posição Y: " + y.intValue() + " Float: " + y);
-            //  posicaoZ.setText("Posição Z: " + z.intValue() + " Float: " + z);
-
             if (z > 1) {
-                if (y < -1.5) { // O dispositivo esta de cabeça pra baixo
+                if (y < -1.5) {
                     setacima.setVisibility(View.VISIBLE);
                     if (!isUltimoInserido(R.mipmap.seta_cima)) {
                         listaMovimentos.add(R.mipmap.seta_cima);
                     }
-                    //detalhesText.setText("CIMA ");
                 } else {
                     if (x == 0) {
-                        //detalhesText.setText("Aparelho centralizado ");
                     } else if (x > 2) {
                         setaesquerda.setVisibility(View.VISIBLE);
                         if (!isUltimoInserido(R.mipmap.seta_esquerda)) {
                             listaMovimentos.add(R.mipmap.seta_esquerda);
                         }
-                        //detalhesText.setText("Virando para ESQUERDA ");
                     } else if (x < -2) {
                         setadireita.setVisibility(View.VISIBLE);
                         if (!isUltimoInserido(R.mipmap.seta_direita)) {
                             listaMovimentos.add(R.mipmap.seta_direita);
                         }
-                        //detalhesText.setText("Virando para DIREITA ");
                     }
                 }
             } else if (z < -1) {
-                //detalhesText.setText("Virando para TRAS ");
                 setabaixo.setVisibility(View.VISIBLE);
                 if (!isUltimoInserido(R.mipmap.seta_baixo)) {
                     listaMovimentos.add(R.mipmap.seta_baixo);
