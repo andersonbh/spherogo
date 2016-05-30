@@ -18,43 +18,49 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/status"
-        android:text="Status: Desconectado"/>
+        android:textSize="20sp"
+        android:text="Status: Desconectado"
+        android:layout_alignParentEnd="true" />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/posicaoX"
-        android:text="Posição X: "
-        android:layout_below="@+id/status"
-        android:layout_alignParentStart="true" />
+    <!--<TextView-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:id="@+id/posicaoX"-->
+        <!--android:text="Posição X: "-->
+        <!--android:layout_below="@+id/status"-->
+        <!--android:layout_alignStart="@+id/status" />-->
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/posicaoY"
-        android:text="Posição Y: "
-        android:layout_below="@+id/posicaoX"
-        android:layout_alignParentStart="true" />
+    <!--<TextView-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:id="@+id/posicaoY"-->
+        <!--android:text="Posição Y: "-->
+        <!--android:layout_below="@+id/posicaoX"-->
+        <!--android:layout_alignStart="@+id/posicaoX" />-->
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/posicaoZ"
-        android:text="Posição Z: "
-        android:layout_below="@+id/posicaoY"
-        android:layout_alignParentStart="true" />
+    <!--<TextView-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:id="@+id/posicaoZ"-->
+        <!--android:text="Posição Z: "-->
+        <!--android:layout_below="@+id/posicaoY"-->
+        <!--android:layout_alignStart="@+id/posicaoY" />-->
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/detalhesText"
-        android:text="Detalhes : "
-        android:layout_below="@+id/posicaoZ"
-        android:layout_alignParentStart="true" />
+    <!--<TextView-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:id="@+id/detalhesText"-->
+        <!--android:text="Detalhes : "-->
+        <!--android:layout_below="@+id/posicaoZ"-->
+        <!--android:layout_alignStart="@+id/posicaoZ" />-->
+
     <ListView
         android:id="@+id/list"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/setabaixo"
+        android:background="@color/colorPrimaryDark"
+        android:layout_toStartOf="@+id/setaesquerda" />
 
     <ImageView
         android:layout_width="150px"
@@ -85,6 +91,8 @@
         android:id="@+id/setacima"
         android:src="@mipmap/seta_cima"
         android:layout_marginBottom="215dp"
+        android:layout_marginEnd="85dp"
+        android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true" />
 

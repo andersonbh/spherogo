@@ -50,7 +50,8 @@ public class MainActivity extends AppCompatActivity
 
     public ConvenienceRobot mRobot;
     public DualStackDiscoveryAgent conexao;
-    public TextView status, posicaoX, posicaoY, posicaoZ, detalhesText;
+    public TextView status;
+    // public TextView posicaoX, posicaoY, posicaoZ, detalhesText;
     public Button desconectar;
     private SensorManager mSensorManager;
     private Sensor mAccelerometer;
@@ -92,10 +93,10 @@ public class MainActivity extends AppCompatActivity
         listaMovimentos = new ArrayList<Integer>();
 
         status = (TextView) findViewById(R.id.status);
-        posicaoX = (TextView) findViewById(R.id.posicaoX);
-        posicaoY = (TextView) findViewById(R.id.posicaoY);
-        posicaoZ = (TextView) findViewById(R.id.posicaoZ);
-        detalhesText = (TextView) findViewById(R.id.detalhesText);
+        //posicaoX = (TextView) findViewById(R.id.posicaoX);
+        //posicaoY = (TextView) findViewById(R.id.posicaoY);
+        //posicaoZ = (TextView) findViewById(R.id.posicaoZ);
+        //detalhesText = (TextView) findViewById(R.id.detalhesText);
         setaesquerda = (ImageView) findViewById(R.id.setaesquerda);
         setadireita = (ImageView) findViewById(R.id.setadireita);
         setabaixo = (ImageView) findViewById(R.id.setabaixo);
@@ -106,14 +107,14 @@ public class MainActivity extends AppCompatActivity
 
         adapter = new
                 MovimentoList(MainActivity.this, listaMovimentos);
-        list=(ListView)findViewById(R.id.list);
+        list = (ListView) findViewById(R.id.list);
         list.setAdapter(adapter);
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
             @Override
             public void onItemClick(AdapterView<?> parent, View view,
                                     int position, long id) {
-                Toast.makeText(MainActivity.this, "Voce movimentou a seta número " +(position + 1), Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, "Você selecionou o movimento de número " + (position + 1), Toast.LENGTH_SHORT).show();
 
             }
         });
@@ -127,7 +128,7 @@ public class MainActivity extends AppCompatActivity
             fab.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    Snackbar.make(view, "Movimente seu celular! Bateria do Sphero: " + (long)( bateria * 100) + "%", Snackbar.LENGTH_LONG)
+                    Snackbar.make(view, "Movimente seu celular! Bateria do Sphero: " + (long) (bateria * 100) + "%", Snackbar.LENGTH_LONG)
                             .setAction("Action", null).show();
                 }
             });
@@ -179,7 +180,7 @@ public class MainActivity extends AppCompatActivity
         alertDialogBuilder.setView(promptView);
 
         final EditText velocidadeInput = (EditText) promptView.findViewById(R.id.velocidade);
-        velocidadeInput.setText(((long)(VELOCIDADE_SPHERO * 100)) + "");
+        velocidadeInput.setText(((long) (VELOCIDADE_SPHERO * 100)) + "");
 
         final EditText numMovimentos = (EditText) promptView.findViewById(R.id.numMovimentos);
         numMovimentos.setText(NUM_MOVIMENTOS + "");
@@ -187,7 +188,7 @@ public class MainActivity extends AppCompatActivity
         alertDialogBuilder.setCancelable(true)
                 .setPositiveButton("Aplicar", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
-                        VELOCIDADE_SPHERO  = (float) Long.parseLong(velocidadeInput.getText().toString()) / 100;
+                        VELOCIDADE_SPHERO = (float) Long.parseLong(velocidadeInput.getText().toString()) / 100;
                         NUM_MOVIMENTOS = Integer.parseInt(numMovimentos.getText().toString());
                         Log.d("Velocidade Sphero", VELOCIDADE_SPHERO + "");
                     }
@@ -369,7 +370,7 @@ public class MainActivity extends AppCompatActivity
             }
             listaMovimentos.remove(0);
             adapter.notifyDataSetChanged();
-        }else{
+        } else {
             executandoMovimentos = false;
         }
 
@@ -377,7 +378,7 @@ public class MainActivity extends AppCompatActivity
 
 
     private void locomover(final float direcao, final float velocidade) {
-        if(mRobot != null) {
+        if (mRobot != null) {
             // Sphero ira para a direcao requerida na velocidade que for passada como parametro
             mRobot.drive(direcao, velocidade);
 
@@ -422,43 +423,43 @@ public class MainActivity extends AppCompatActivity
         Quanto menor o valor de Z Mais ele esta inclinado para traz.
         */
 
-            posicaoX.setText("Posição X: " + x.intValue() + " Float: " + x);
-            posicaoY.setText("Posição Y: " + y.intValue() + " Float: " + y);
-            posicaoZ.setText("Posição Z: " + z.intValue() + " Float: " + z);
+            //  posicaoX.setText("Posição X: " + x.intValue() + " Float: " + x);
+            //  posicaoY.setText("Posição Y: " + y.intValue() + " Float: " + y);
+            //  posicaoZ.setText("Posição Z: " + z.intValue() + " Float: " + z);
 
             if (z > 1) {
-                if (y < -2) { // O dispositivo esta de cabeça pra baixo
+                if (y < -1.5) { // O dispositivo esta de cabeça pra baixo
                     setacima.setVisibility(View.VISIBLE);
                     if (!isUltimoInserido(R.mipmap.seta_cima)) {
                         listaMovimentos.add(R.mipmap.seta_cima);
                     }
-                    detalhesText.setText("CIMA ");
+                    //detalhesText.setText("CIMA ");
                 } else {
                     if (x == 0) {
-                        detalhesText.setText("Aparelho centralizado ");
+                        //detalhesText.setText("Aparelho centralizado ");
                     } else if (x > 2) {
                         setaesquerda.setVisibility(View.VISIBLE);
                         if (!isUltimoInserido(R.mipmap.seta_esquerda)) {
                             listaMovimentos.add(R.mipmap.seta_esquerda);
                         }
-                        detalhesText.setText("Virando para ESQUERDA ");
+                        //detalhesText.setText("Virando para ESQUERDA ");
                     } else if (x < -2) {
                         setadireita.setVisibility(View.VISIBLE);
                         if (!isUltimoInserido(R.mipmap.seta_direita)) {
                             listaMovimentos.add(R.mipmap.seta_direita);
                         }
-                        detalhesText.setText("Virando para DIREITA ");
+                        //detalhesText.setText("Virando para DIREITA ");
                     }
                 }
-            } else if (z < 1){
-                detalhesText.setText("Virando para TRAS ");
+            } else if (z < -1) {
+                //detalhesText.setText("Virando para TRAS ");
                 setabaixo.setVisibility(View.VISIBLE);
                 if (!isUltimoInserido(R.mipmap.seta_baixo)) {
                     listaMovimentos.add(R.mipmap.seta_baixo);
                 }
             }
             adapter.notifyDataSetChanged();
-        }else if(!executandoMovimentos && listaMovimentos.size() == NUM_MOVIMENTOS){
+        } else if (!executandoMovimentos && listaMovimentos.size() == NUM_MOVIMENTOS) {
             esconderSetas();
         }
     }
@@ -467,6 +468,5 @@ public class MainActivity extends AppCompatActivity
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
         //Retorna a bateria disponivel do Sphero
         bateria = sensor.getPower();
-
     }
 }
