@@ -1,48 +1,49 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:padding="10dp">
 
     <TextView
+        android:id="@+id/textView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:text="Configurações - SpheroGo"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:textColor="@color/colorPrimaryDark"
-        android:text="Configurações - SpheroGo"
-        android:textSize="20dp"
-        android:id="@+id/textView" />
+        android:textSize="20dp" />
 
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:text="Velocidade do Sphero (%)"
         android:textAppearance="?android:attr/textAppearanceMedium"
-        android:textColor="@color/colorPrimaryDark"
-        android:text="Velocidade do Sphero (%)" />
+        android:textColor="@color/colorPrimaryDark" />
+
     <EditText
         android:id="@+id/velocidade"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:textColor="@color/colorPrimaryDark"
         android:hint="Velocidade do Sphero .."
         android:inputType="number"
-        android:padding="10dp" />
+        android:padding="10dp"
+        android:textColor="@color/colorPrimaryDark" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:text="Número de Movimentos"
         android:textAppearance="?android:attr/textAppearanceMedium"
-        android:textColor="@color/colorPrimaryDark"
-        android:text="Número de Movimentos" />
+        android:textColor="@color/colorPrimaryDark" />
+
     <EditText
         android:id="@+id/numMovimentos"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:textColor="@color/colorPrimaryDark"
         android:hint="Número de movimentos .."
         android:inputType="number"
-        android:padding="10dp" />
+        android:padding="10dp"
+        android:textColor="@color/colorPrimaryDark" />
 </LinearLayout>

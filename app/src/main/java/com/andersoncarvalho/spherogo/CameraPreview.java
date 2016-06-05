@@ -27,7 +27,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     public void surfaceCreated(SurfaceHolder holder) {
         try {
             mCamera.setPreviewDisplay(holder);
-        //  Vira a camera em 90 graus
+            //  Vira a camera em 90 graus
             mCamera.setDisplayOrientation(90);
             mCamera.startPreview();
         } catch (IOException e) {
@@ -40,20 +40,20 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
     public void surfaceChanged(SurfaceHolder holder, int format, int w, int h) {
 
-        if (mHolder.getSurface() == null){
+        if (mHolder.getSurface() == null) {
             return;
         }
 
         try {
             mCamera.stopPreview();
-        } catch (Exception e){
+        } catch (Exception e) {
         }
 
         try {
             mCamera.setPreviewDisplay(mHolder);
             mCamera.startPreview();
 
-        } catch (Exception e){
+        } catch (Exception e) {
             Log.d("IEE", "Error starting camera preview: " + e.getMessage());
         }
     }

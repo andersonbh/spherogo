@@ -1,63 +1,61 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:showIn="@layout/app_bar_main"
-    tools:context="com.andersoncarvalho.spherogo.MainActivity">
+    tools:context="com.andersoncarvalho.spherogo.MainActivity"
+    tools:showIn="@layout/app_bar_main">
 
     <FrameLayout
         android:id="@+id/camera_preview"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:layout_weight="1"
         android:layout_alignParentBottom="true"
-        android:layout_alignParentStart="true" />
+        android:layout_alignParentStart="true"
+        android:layout_weight="1" />
 
     <TextView
+        android:id="@+id/status"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/status"
-        android:textSize="20sp"
+        android:layout_alignParentEnd="true"
         android:text="Status: Desconectado"
-        android:layout_alignParentEnd="true" />
-
+        android:textSize="20sp" />
 
 
     <!--<TextView-->
-        <!--android:layout_width="wrap_content"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:id="@+id/posicaoX"-->
-        <!--android:text="Posição X: "-->
-        <!--android:layout_below="@+id/status"-->
-        <!--android:layout_alignStart="@+id/status" />-->
+    <!--android:layout_width="wrap_content"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:id="@+id/posicaoX"-->
+    <!--android:text="Posição X: "-->
+    <!--android:layout_below="@+id/status"-->
+    <!--android:layout_alignStart="@+id/status" />-->
 
     <!--<TextView-->
-        <!--android:layout_width="wrap_content"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:id="@+id/posicaoY"-->
-        <!--android:text="Posição Y: "-->
-        <!--android:layout_below="@+id/posicaoX"-->
-        <!--android:layout_alignStart="@+id/posicaoX" />-->
+    <!--android:layout_width="wrap_content"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:id="@+id/posicaoY"-->
+    <!--android:text="Posição Y: "-->
+    <!--android:layout_below="@+id/posicaoX"-->
+    <!--android:layout_alignStart="@+id/posicaoX" />-->
 
     <!--<TextView-->
-        <!--android:layout_width="wrap_content"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:id="@+id/posicaoZ"-->
-        <!--android:text="Posição Z: "-->
-        <!--android:layout_below="@+id/posicaoY"-->
-        <!--android:layout_alignStart="@+id/posicaoY" />-->
+    <!--android:layout_width="wrap_content"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:id="@+id/posicaoZ"-->
+    <!--android:text="Posição Z: "-->
+    <!--android:layout_below="@+id/posicaoY"-->
+    <!--android:layout_alignStart="@+id/posicaoY" />-->
 
     <!--<TextView-->
-        <!--android:layout_width="wrap_content"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:id="@+id/detalhesText"-->
-        <!--android:text="Detalhes : "-->
-        <!--android:layout_below="@+id/posicaoZ"-->
-        <!--android:layout_alignStart="@+id/posicaoZ" />-->
+    <!--android:layout_width="wrap_content"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:id="@+id/detalhesText"-->
+    <!--android:text="Detalhes : "-->
+    <!--android:layout_below="@+id/posicaoZ"-->
+    <!--android:layout_alignStart="@+id/posicaoZ" />-->
 
     <ListView
         android:id="@+id/list"
@@ -65,40 +63,43 @@
         android:layout_height="wrap_content"
         android:layout_alignBottom="@+id/setabaixo"
         android:layout_toStartOf="@+id/setaesquerda"
-        android:padding="5dp"/>
+        android:padding="5dp" />
 
     <ImageView
-        android:layout_width="150px"
-        android:layout_height="150px"
         android:id="@+id/setadireita"
-        android:src="@mipmap/seta_direita"
+        android:layout_width="150px"
+        android:layout_height="150px"
         android:layout_alignTop="@+id/setaesquerda"
-        android:layout_toEndOf="@+id/setabaixo" />
+        android:layout_toEndOf="@+id/setabaixo"
+        android:src="@mipmap/seta_direita" />
+
     <ImageView
-        android:layout_width="150px"
-        android:layout_height="150px"
         android:id="@+id/setaesquerda"
-        android:src="@mipmap/seta_esquerda"
+        android:layout_width="150px"
+        android:layout_height="150px"
+        android:layout_alignTop="@+id/setacima"
         android:layout_marginTop="50dp"
-        android:layout_alignTop="@+id/setacima"
-        android:layout_toStartOf="@+id/setabaixo" />
+        android:layout_toStartOf="@+id/setabaixo"
+        android:src="@mipmap/seta_esquerda" />
+
     <ImageView
-        android:layout_width="150px"
-        android:layout_height="150px"
         android:id="@+id/setabaixo"
-        android:src="@mipmap/seta_baixo"
-        android:layout_alignTop="@+id/setacima"
-        android:layout_alignStart="@+id/setacima"
-        android:layout_marginTop="100dp" />
-    <ImageView
         android:layout_width="150px"
         android:layout_height="150px"
+        android:layout_alignStart="@+id/setacima"
+        android:layout_alignTop="@+id/setacima"
+        android:layout_marginTop="100dp"
+        android:src="@mipmap/seta_baixo" />
+
+    <ImageView
         android:id="@+id/setacima"
-        android:src="@mipmap/seta_cima"
+        android:layout_width="150px"
+        android:layout_height="150px"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:layout_centerHorizontal="true"
         android:layout_marginBottom="215dp"
         android:layout_marginEnd="85dp"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true" />
+        android:src="@mipmap/seta_cima" />
 
 </RelativeLayout>

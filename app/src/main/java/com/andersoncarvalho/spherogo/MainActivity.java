@@ -93,7 +93,7 @@ public class MainActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        if(checarPermissoesDeLocalizacao()) {
+        if (checarPermissoesDeLocalizacao()) {
             conexao.getInstance().addRobotStateListener(this);
         }
         mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
@@ -109,7 +109,7 @@ public class MainActivity extends AppCompatActivity
         goButton = (FloatingActionButton) findViewById(R.id.gobotao);
 
 
-        if(checarPermissoesDaCamera()) {
+        if (checarPermissoesDaCamera()) {
             mCamera = getCameraInstance();
             // Cria o preview da camera
             mPreview = new CameraPreview(this, mCamera);
@@ -177,33 +177,34 @@ public class MainActivity extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
     }
 
-    public boolean checarPermissoesDaCamera(){
+    public boolean checarPermissoesDaCamera() {
         int result = ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA);
-        if (result == PackageManager.PERMISSION_GRANTED){
+        if (result == PackageManager.PERMISSION_GRANTED) {
             return true;
         } else {
-                    ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.CAMERA},CAMERA_PERMISSION_REQUEST_CODE);
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, CAMERA_PERMISSION_REQUEST_CODE);
             return false;
         }
     }
 
-    public boolean checarPermissoesDeLocalizacao(){
+    public boolean checarPermissoesDeLocalizacao() {
         int result = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION);
-        if (result == PackageManager.PERMISSION_GRANTED){
+        if (result == PackageManager.PERMISSION_GRANTED) {
             return true;
         } else {
-            ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, PERMISSION_REQUEST_COARSE_LOCATION);
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, PERMISSION_REQUEST_COARSE_LOCATION);
             return false;
         }
     }
 
-    /** Metodo para pegar a instancia da camera */
-    public static Camera getCameraInstance(){
+    /**
+     * Metodo para pegar a instancia da camera
+     */
+    public static Camera getCameraInstance() {
         Camera c = null;
         try {
             c = Camera.open(); // Tenta pegar a camera
-        }
-        catch (Exception e){
+        } catch (Exception e) {
             // Camera deu pau ou nao existe
         }
         return c; // retorna nulo se a camera nao existe
